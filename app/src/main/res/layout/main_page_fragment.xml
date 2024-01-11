@@ -4,21 +4,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/account"
+    <RelativeLayout
+        android:id="@+id/accountBalanceLayout"
         android:layout_width="match_parent"
         android:layout_height="162dp"
         android:layout_marginHorizontal="30dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/style_shape"
         android:backgroundTint="#5A36F2"
         android:padding="25dp"
-        android:text="Account"
-        android:layout_marginTop="20dp"
-        android:textColor="@color/white"
-        android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Balance  "
+            android:textColor="@color/white"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/accountBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="0.00"
+            android:textColor="@color/white"
+            android:textSize="34sp" />
+
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/showMore"
@@ -29,7 +44,7 @@
         android:text="Show More"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/account" />
+        app:layout_constraintTop_toBottomOf="@+id/accountBalanceLayout" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -37,26 +52,35 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@id/buttonPanel">
 
-        <EditText
-            android:id="@+id/itemName"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="30dp"
-            android:background="@drawable/text_shape"
-            android:hint="Name"
-            android:padding="8dp"
-            android:textSize="28dp" />
+            android:layout_marginHorizontal="30dp">
 
-        <EditText
-            android:id="@+id/itemAmount"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/itemName"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:hint="Name"
+                android:imeOptions="actionNext"
+                android:singleLine="true"
+                android:textSize="24sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_marginHorizontal="30dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/text_shape"
-            android:hint="Amount"
-            android:padding="8dp"
-            android:textSize="28dp" />
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/itemAmount"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="10dp"
+                android:hint="Amount"
+                android:inputType="numberDecimal"
+                android:textSize="24sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
 
@@ -64,8 +88,8 @@
         android:id="@+id/buttonPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp"
         android:layout_marginBottom="40dp"
+        android:padding="20dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatButton
@@ -74,8 +98,9 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
             android:layout_weight="1"
-            android:background="@drawable/style_shape"
+            android:background="@drawable/ripple"
             android:backgroundTint="#4CAF50"
+            android:foreground="@drawable/style_shape"
             android:paddingHorizontal="60dp"
             android:text="+"
             android:textColor="@color/white"
@@ -87,8 +112,9 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
             android:layout_weight="1"
-            android:background="@drawable/style_shape"
+            android:background="@drawable/ripple"
             android:backgroundTint="#F44336"
+            android:foreground="@drawable/style_shape"
             android:paddingHorizontal="60dp"
             android:text="-"
             android:textColor="@color/white"
