@@ -15,7 +15,7 @@ import com.ubaid.expensetracker.model.MainViewModel
 
 class ListPageFragment : Fragment(R.layout.list_page_fragment) {
     private lateinit var binding: ListPageFragmentBinding
-    private var listViewAdapter = ListViewAdapter()
+    private var listViewAdapter = ListViewAdapter(false)
     private lateinit var mainViewModel: MainViewModel
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
