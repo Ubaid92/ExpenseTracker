@@ -9,9 +9,11 @@
         android:id="@+id/currentBalance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/purple"
         android:text="Current Balance :"
-        android:textColor="@color/purple"
-        android:textSize="21sp"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:padding="10dp"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
