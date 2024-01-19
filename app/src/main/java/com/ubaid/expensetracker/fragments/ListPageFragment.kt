@@ -27,6 +27,9 @@ class ListPageFragment : Fragment(R.layout.list_page_fragment) {
         mainViewModel.accountBalanceLiveData.observe(viewLifecycleOwner) { balance ->
             binding.currentBalance.text = "Current Balance $balance"
         }
+        mainViewModel.accountBalanceLiveData.observe(viewLifecycleOwner) { balance ->
+            binding.currentBalance.text = "Current Balance: $balance"
+        }
 
         binding.recyclerView.adapter = listViewAdapter
         binding.recyclerView.addItemDecoration(

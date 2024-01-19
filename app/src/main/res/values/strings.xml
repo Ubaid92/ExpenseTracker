@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Expense Tracker</string>
+    <string name="server_client_id">494201724951-g5h6jlhsa0n0fafskka3ro54sphesp37.apps.googleusercontent.com</string>
+
 </resources>

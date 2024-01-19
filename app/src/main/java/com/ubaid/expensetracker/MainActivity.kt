@@ -1,26 +1,160 @@
 package com.ubaid.expensetracker
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.FragmentManager.OnBackStackChangedListener
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.auth
 import com.ubaid.expensetracker.databinding.ActivityMainBinding
 import com.ubaid.expensetracker.fragments.MainPageFragment
+import com.ubaid.expensetracker.login.LogInFragment
 import com.ubaid.expensetracker.model.MainViewModel
 
 class MainActivity : AppCompatActivity() {
-   private lateinit var binding: ActivityMainBinding
-   private lateinit var mainViewModel: MainViewModel
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var mainViewModel: MainViewModel
+    private lateinit var auth: FirebaseAuth
+    private lateinit var oneTapClient: SignInClient
+    private var currentUser: FirebaseUser? = null
+    override fun onStart() {
+        super.onStart()
+        // Check if user is signed in (non-null) and update UI accordingly.
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportFragmentManager.beginTransaction().add(R.id.container, MainPageFragment()).commit()
+        auth = Firebase.auth
+        oneTapClient = Identity.getSignInClient(this)
+        currentUser = auth.currentUser
+        if (currentUser != null) {
+            Toast.makeText(this, "Welcome back ${currentUser?.displayName}", Toast.LENGTH_SHORT)
+                .show()
+        }
+
+        setupListeners()
+        supportFragmentManager.beginTransaction().replace(R.id.container, MainPageFragment()).commit()
         mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
 
     }
 
-    fun setTitle(title:String){
+    private fun setupListeners() {
+        binding.logInBtn.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, LogInFragment())
+                .addToBackStack("any")
+                .commit()
+        }
+        binding.logoutBtn.setOnClickListener {
+            auth.signOut()
+            currentUser = null
+            binding.logInBtn.visibility = View.VISIBLE
+            Toast.makeText(this, "Logout Success", Toast.LENGTH_SHORT).show()
+        }
 
-            binding.heading.text = title
+        supportFragmentManager.addFragmentOnAttachListener { _, fragment ->
+            Toast.makeText(this, "CurrentUser: "+currentUser, Toast.LENGTH_SHORT).show()
+            when (fragment) {
+                is MainPageFragment, is LogInFragment -> if (currentUser != null) {
+                    binding.logInBtn.visibility = View.GONE
+                } else binding.logInBtn.visibility = View.VISIBLE
+            }
+        }
+        supportFragmentManager.addOnBackStackChangedListener {
+            Toast.makeText(this, "CurrentUser: "+currentUser, Toast.LENGTH_SHORT).show()
+            when (supportFragmentManager.fragments.last()) {
+                is MainPageFragment, is LogInFragment -> if (currentUser != null) {
+                    binding.logInBtn.visibility = View.GONE
+                } else binding.logInBtn.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    fun googleLogIn() {
+        val signInRequest = BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(getString(R.string.server_client_id))
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .build()
+        oneTapClient.beginSignIn(signInRequest).addOnSuccessListener { result ->
+            Log.d(LogInFragment.TAG, ">>Success ")
+            ActivityCompat.startIntentSenderForResult(
+                this,
+                result.pendingIntent.intentSender, LogInFragment.REQ_CODE,
+                null, 0, 0, 0, null
+            )
+        }.addOnFailureListener {
+            Log.d(LogInFragment.TAG, "Failed: " + it.message)
+
+        }
+
+    }
+
+
+    fun setTitle(title: String) {
+        binding.heading.text = title
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == LogInFragment.REQ_CODE && resultCode == RESULT_OK) {
+            val idToken = oneTapClient.getSignInCredentialFromIntent(data).googleIdToken
+
+            when {
+                idToken != null -> {
+                    // Got an ID token from Google. Use it to authenticate
+                    // with Firebase.
+                    val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                    auth.signInWithCredential(firebaseCredential)
+                        .addOnCompleteListener(this) { task ->
+                            if (task.isSuccessful) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d(LogInFragment.TAG, "signInWithCredential:success")
+                                currentUser = auth.currentUser
+                                Toast.makeText(this, "Login Success", Toast.LENGTH_SHORT).show()
+                                binding.logInBtn.visibility = View.GONE
+                                supportFragmentManager.beginTransaction()
+                                    .add(R.id.container, MainPageFragment()).commit()
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.w(
+                                    LogInFragment.TAG,
+                                    "signInWithCredential:failure",
+                                    task.exception
+                                )
+                                Toast.makeText(this, "Failed", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                }
+
+                else -> {
+                    // Shouldn't happen.
+                    Log.d(LogInFragment.TAG, "No ID token!")
+                }
+            }
+        } else {
+            Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show()
+        }
     }
 }

@@ -13,7 +13,7 @@ import com.ubaid.expensetracker.util.DateUtils
 
 class ListViewAdapter(private val isLimited: Boolean) :
     RecyclerView.Adapter<ListViewAdapter.ViewHolder>() {
-    var transactionsList = arrayListOf<TransactionData>()
+    var transactionsList = listOf<TransactionData>()
 
     inner class ViewHolder(private val binding: ViewBinding) :
         RecyclerView.ViewHolder(binding.root) {

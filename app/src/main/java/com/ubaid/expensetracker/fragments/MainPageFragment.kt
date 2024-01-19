@@ -1,9 +1,7 @@
 package com.ubaid.expensetracker.fragments
 
-import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -13,11 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ubaid.expensetracker.MainActivity
 import com.ubaid.expensetracker.R
 import com.ubaid.expensetracker.adapter.ListViewAdapter
+import com.ubaid.expensetracker.data.TransactionData
 import com.ubaid.expensetracker.databinding.MainPageFragmentBinding
 import com.ubaid.expensetracker.model.MainViewModel
-import java.time.LocalDate
-import java.util.Date
-import java.util.Locale
 
 class MainPageFragment : Fragment(R.layout.main_page_fragment) {
     private lateinit var binding: MainPageFragmentBinding
@@ -28,29 +24,22 @@ class MainPageFragment : Fragment(R.layout.main_page_fragment) {
         super.onViewCreated(view, savedInstanceState)
         binding = MainPageFragmentBinding.bind(view)
         mainViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+        mainViewModel.syncData()
 
-        mainViewModel.accountBalanceLiveData.observe(viewLifecycleOwner) { balance ->
-            binding.accountBalance.text = balance
-        }
         mainViewModel.transactionsListLiveData.observe(viewLifecycleOwner) {
             binding.recyclerView.adapter = listViewAdapter
-            val date = Date()
             binding.recyclerView.addItemDecoration(
                 DividerItemDecoration(
                     requireActivity(),
                     RecyclerView.VERTICAL
-
                 )
             )
-
-            listViewAdapter.transactionsList = it
-
-
+            listViewAdapter.transactionsList = it.reversed()
+        }
+        mainViewModel.accountBalanceLiveData.observe(viewLifecycleOwner) { balance ->
+            binding.accountBalance.text = balance
         }
 
-//                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
-//
-//        formatter.parse(time)
 
 
         showMoreListener()
@@ -83,7 +72,7 @@ class MainPageFragment : Fragment(R.layout.main_page_fragment) {
         } else {
             Toast.makeText(requireActivity(), "Data Updated", Toast.LENGTH_SHORT).show()
             mainViewModel.save(name, operation + amount)
-
+            mainViewModel.syncData()
             binding.itemName.text?.clear()
             binding.itemAmount.text?.clear()
         }
