@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ubaid.expensetracker.MainActivity
 import com.ubaid.expensetracker.R
 import com.ubaid.expensetracker.adapter.ListViewAdapter
-import com.ubaid.expensetracker.data.TransactionData
 import com.ubaid.expensetracker.databinding.MainPageFragmentBinding
 import com.ubaid.expensetracker.model.MainViewModel
 

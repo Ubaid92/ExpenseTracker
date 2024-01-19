@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.FragmentManager.OnBackStackChangedListener
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
@@ -44,10 +43,14 @@ class MainActivity : AppCompatActivity() {
         if (currentUser != null) {
             Toast.makeText(this, "Welcome back ${currentUser?.displayName}", Toast.LENGTH_SHORT)
                 .show()
+            binding.heading.text = currentUser?.displayName.toString()
+
+
         }
 
         setupListeners()
-        supportFragmentManager.beginTransaction().replace(R.id.container, MainPageFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.container, MainPageFragment())
+            .commit()
         mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
 
@@ -64,25 +67,33 @@ class MainActivity : AppCompatActivity() {
             auth.signOut()
             currentUser = null
             binding.logInBtn.visibility = View.VISIBLE
+            binding.logoutBtn.visibility = View.GONE
+            binding.heading.text = "Expense Tracker"
             Toast.makeText(this, "Logout Success", Toast.LENGTH_SHORT).show()
         }
 
         supportFragmentManager.addFragmentOnAttachListener { _, fragment ->
-            Toast.makeText(this, "CurrentUser: "+currentUser, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "CurrentUser: " + currentUser, Toast.LENGTH_SHORT).show()
             when (fragment) {
                 is MainPageFragment, is LogInFragment -> if (currentUser != null) {
                     binding.logInBtn.visibility = View.GONE
-                } else binding.logInBtn.visibility = View.VISIBLE
+                    binding.logoutBtn.visibility = View.VISIBLE
+                    binding.heading.text = currentUser?.displayName.toString()
+
+                } else {
+                    binding.logInBtn.visibility = View.VISIBLE
+                    binding.logoutBtn.visibility = View.GONE
+                }
             }
         }
-        supportFragmentManager.addOnBackStackChangedListener {
-            Toast.makeText(this, "CurrentUser: "+currentUser, Toast.LENGTH_SHORT).show()
-            when (supportFragmentManager.fragments.last()) {
-                is MainPageFragment, is LogInFragment -> if (currentUser != null) {
-                    binding.logInBtn.visibility = View.GONE
-                } else binding.logInBtn.visibility = View.VISIBLE
-            }
-        }
+//        supportFragmentManager.addOnBackStackChangedListener {
+//            Toast.makeText(this, "CurrentUser: " + currentUser, Toast.LENGTH_SHORT).show()
+//            when (supportFragmentManager.fragments.last()) {
+//                is MainPageFragment, is LogInFragment -> if (currentUser != null) {
+//                    binding.logInBtn.visibility = View.GONE
+//                } else binding.logInBtn.visibility = View.VISIBLE
+//            }
+//        }
     }
 
     fun googleLogIn() {
@@ -91,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
                     .setServerClientId(getString(R.string.server_client_id))
-                    .setFilterByAuthorizedAccounts(false)
+                    .setFilterByAuthorizedAccounts(true)
                     .build()
             )
             .build()
@@ -103,16 +114,16 @@ class MainActivity : AppCompatActivity() {
                 null, 0, 0, 0, null
             )
         }.addOnFailureListener {
-            Log.d(LogInFragment.TAG, "Failed: " + it.message)
+            Log.d(LogInFragment.TAG, "Failed123: " + it.message)
 
         }
 
     }
 
-
-    fun setTitle(title: String) {
-        binding.heading.text = title
-    }
+//
+//    fun setTitle(title: String) {
+//        binding.heading.text = title
+//    }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -155,6 +166,37 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun signIn(email: String, password: String) {
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT)
+                .show()
+        } else {
+
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(
+                            this,
+                            "Sign in successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        currentUser = auth.currentUser
+                        supportFragmentManager
+                            .beginTransaction()
+                            .replace(R.id.container, MainPageFragment())
+                            .commit()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Failed: ${task.exception?.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
         }
     }
 }
